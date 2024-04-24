@@ -21,4 +21,8 @@ package io.anserini.index.generator;
  * source document.
  */
 public class InvalidDocumentException  extends GeneratorException {
+
+    public InvalidDocumentException(String string) {
+        
+    }
 }

@@ -29,70 +29,71 @@
   * This class uses Jython to execute a Python script that reads and processes SafeTensors data.
   */
  public class SafetensorsDenseVectorCollection extends DocumentCollection<SafetensorsDenseVectorCollection.Document> {
-   private Path path;
-   private PythonInterpreter interpreter;
+     private Path path;
+     private PythonInterpreter interpreter;
  
-   public SafetensorsDenseVectorCollection(Path path) {
-     this.path = path;
-     this.interpreter = new PythonInterpreter();
-   }
- 
- @Override
- public FileSegment<SourceDocument> createFileSegment(Path p) throws IOException {
-     interpreter.execfile("path/to/your_python_script.py");
-     interpreter.set("tensor_file_path", p.toString());
-     PyObject tensorData = interpreter.eval("read_tensor_data(tensor_file_path)");
-     return new SafetensorsDenseVectorCollection.Segment(tensorData);
- }
- 
-   public static class Segment<T extends SafetensorsDenseVectorCollection.Document> extends FileSegment<T> {
-     private PyObject tensorData;
- 
-     public Segment(PyObject tensorData) {
-       this.tensorData = tensorData;
+     public SafetensorsDenseVectorCollection(Path path) {
+         this.path = path;
+         this.interpreter = new PythonInterpreter();
      }
  
      @Override
-     protected Document createNewDocument() {
-       // Assume each element in tensorData is a PyDictionary or similar that contains 'docid' and 'vector'
-       PyObject pyObject = tensorData.__getitem__(0); // Get the first item
-       String docid = pyObject.__getitem__("docid").toString();
-       String contents = pyObject.__getitem__("vector").toString();
- 
-       return new Document(docid, contents);
+     public FileSegment<SafetensorsDenseVectorCollection.Document> createFileSegment(Path p) throws IOException {
+         try {
+             interpreter.execfile("path/to/your_python_script.py");
+             interpreter.set("tensor_file_path", p.toString());
+             PyObject tensorData = interpreter.eval("read_tensor_data(tensor_file_path)");
+             return new Segment(tensorData);
+         } finally {
+             interpreter.close();  // Ensure the interpreter is closed after use
+         }
      }
-   }
  
-   public static class Document extends io.anserini.collection.Document {
-     private final String id;
-     private final String contents;
+     public static class Segment extends FileSegment<SafetensorsDenseVectorCollection.Document> {
+         private PyObject tensorData;
  
-     public Document(String id, String contents) {
-       this.id = id;
-       this.contents = contents;
+         public Segment(PyObject tensorData) {
+             this.tensorData = tensorData;
+         }
+ 
+         @Override
+         protected Document createNewDocument() {
+             PyObject pyObject = tensorData.__getitem__(0); // Get the first item
+             String docid = pyObject.__getitem__("docid").toString();
+             String contents = pyObject.__getitem__("vector").toString();
+ 
+             return new Document(docid, contents);
+         }
+     }
+ 
+     public static class Document extends SourceDocument {
+         private final String id;
+         private final String contents;
+ 
+         public Document(String id, String contents) {
+             this.id = id;
+             this.contents = contents;
+         }
+ 
+         @Override
+         public String id() {
+             return id;
+         }
+ 
+         @Override
+         public String contents() {
+             return contents;
+         }
+ 
+         @Override
+         public Map<String, String> fields() {
+             return new HashMap<>();
+         }
      }
  
      @Override
-     public String id() {
-       return id;
+     public FileSegment<Document> createFileSegment(BufferedReader bufferedReader) throws IOException {
+         throw new UnsupportedOperationException("BufferedReader based file segment creation not supported");
      }
- 
-     @Override
-     public String contents() {
-       return contents;
-     }
- 
-     @Override
-     public Map<String, String> fields() {
-       // We're not going to index any other fields, so just initialize an empty map.
-       return new HashMap<>();
-     }
-   }
-
-@Override
-public FileSegment<Document> createFileSegment(BufferedReader bufferedReader) throws IOException {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'createFileSegment'");
-}
  }
  

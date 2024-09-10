@@ -3,6 +3,7 @@
 This page contains instructions for running BM25 baselines on the [MS MARCO *passage* ranking task](https://microsoft.github.io/msmarco/).
 Note that there is a separate [MS MARCO *document* ranking task](experiments-msmarco-doc.md).
 This exercise will require a machine with >8 GB RAM and >15 GB free disk space .
+If you're using a Windows machine, equivalent commands are provided alongside the Unix-like (Linux/macOS) commands.
 
 If you're a Waterloo student traversing the [onboarding path](https://github.com/lintool/guide/blob/master/ura.md), [start here](start-here.md
 ).
@@ -101,6 +102,12 @@ bin/run.sh io.anserini.index.IndexCollection \
   -generator DefaultLuceneDocumentGenerator \
   -threads 9 -storePositions -storeDocvectors -storeRaw 
 ```
+For Windows:
+```bash
+bin\run.bat io.anserini.index.IndexCollection -collection JsonCollection -input collections\msmarco-passage\collection_jsonl -index indexes\msmarco-passage\lucene-index-msmarco -generator DefaultLuceneDocumentGenerator -threads 9 -storePositions -storeDocvectors -storeRaw
+```
+
+
 
 In this case, Lucene creates what is known as an **inverted index**.
 
@@ -124,6 +131,10 @@ bin/run.sh io.anserini.search.SearchCollection \
   -output runs/run.msmarco-passage.dev.small.tsv -format msmarco \
   -parallelism 4 \
   -bm25 -bm25.k1 0.82 -bm25.b 0.68 -hits 1000
+```
+For Windows:
+```bash
+bin\run.bat io.anserini.search.SearchCollection -index indexes\msmarco-passage\lucene-index-msmarco -topics collections\msmarco-passage\queries.dev.small.tsv -topicReader TsvInt -output runs\run.msmarco-passage.dev.small.tsv -format msmarco -parallelism 4 -bm25 -bm25.k1 0.82 -bm25.b 0.68 -hits 1000
 ```
 
 This is the **retrieval** (or **search**) phase.
@@ -508,3 +519,7 @@ The BM25 run with default parameters `k1=0.9`, `b=0.4` roughly corresponds to th
 + Results reproduced by [@natek-1](https://github.com/natek-1) on 2024-08-05 (commit [`b467d4a`](https://github.com/castorini/anserini/commit/b467d4ade64ba99810b554bfa47655958b9477b2))
 + Results reproduced by [@emily-emily](https://github.com/emily-emily) on 2024-08-15 (commit [`28a98d0`](https://github.com/castorini/anserini/commit/28a98d05d1d379cd9133fce151779e2f312b3806))
 + Results reproduced by [@npjd](https://github.com/npjd) on 2024-08-17 (commit [`46b6834`](https://github.com/castorini/anserini/commit/46b68345b0ee614f511b87c9f66cee399e1308c5))
++ Results reproduced by [@setarehbabajani](https://github.com/setarehbabajani) on 2024-08-30 (commit [`859c7bb`](https://github.com/castorini/anserini/commit/859c7bbadd39693e5890a758e89135c04ab811ee))
++ Results reproduced by [@antea-ab](https://github.com/antea-ab) on 2024-09-01 (commit [`e0a9578`](https://github.com/castorini/anserini/commit/e0a9578cd391674e8b3aa15ee25906b5fb442c9d))
++ Results reproduced by [@anshulsc](https://github.com/anshulsc) on 2024-09-06 (commit [`c096dff`](https://github.com/castorini/anserini/commit/c096dffe0d114af3bc4d8e4e71ebef4fe02bc94d))
++ Results reproduced by [@r-aya](https://github.com/r-aya) on 2024-09-07 (commit [`4319f89`](https://github.com/castorini/anserini/commit/4319f89472c4dd3359482f041dbcaee5202d8dd2))
